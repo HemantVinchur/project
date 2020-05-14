@@ -24,15 +24,18 @@ const userSignup = async(payLoad) => {
             if (!mobileData) {
                 otp = Math.floor(1000 + Math.random() * 9000);
                 if (otp) {
-                    const transporter = nodemailer.createTransport(smtpTransport({
-                        service: 'gmail',
+                    var smtpTransport = nodemailer.createTransport({
+                        pool: true,
                         host: 'smtp.gmail.com',
+                        port: 465,
                         auth: {
                             user: 'venus.bityotta@gmail.com',
                             pass: 'venus@123'
+                        },
+                        tls: {
+                            rejectUnauthorized: false
                         }
-                    }));
-
+                    });
                     const mailOptions = {
                         from: 'venus.bityotta@gmail.com',
                         to: payLoad.email,
@@ -40,8 +43,7 @@ const userSignup = async(payLoad) => {
                         text: "Hi, " + "\n" + "Your OTP is " + otp
                     };
 
-                    var sendMail = await transporter.sendMail(mailOptions);
-
+                    var sendMail = await smtpTransport.sendMail(mailOptions);
 
                 } else {
                     var data = "OTP does not created"
