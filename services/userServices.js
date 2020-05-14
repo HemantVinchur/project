@@ -28,9 +28,6 @@ const userSignup = async(payLoad) => {
                         auth: {
                             user: 'venus.bityotta@gmail.com',
                             pass: 'venus@123'
-                        },
-                        tls: {
-                            rejectUnauthorized: false
                         }
                     });
 
@@ -79,9 +76,6 @@ const verifyEmailServices = async(payLoad) => {
                     auth: {
                         user: 'venus.bityotta@gmail.com',
                         pass: 'venus@123'
-                    },
-                    tls: {
-                        rejectUnauthorized: false
                     }
                 });
 
