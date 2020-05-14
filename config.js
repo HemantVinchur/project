@@ -22,7 +22,7 @@ const DBConfig = {
     },
 }
 
-switch (process.env.NODE_DEV) {
+switch (process.env.NODE_ENV) {
     case "dev":
         let dev = DBConfig.dev;
         DBConfig.dev.URI = `mongodb://${dev.mongo.user}:${dev.mongo.password}@${dev.mongo.host}:${dev.mongo.port}/${dev.mongo.database}`
