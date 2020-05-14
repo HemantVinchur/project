@@ -3,6 +3,7 @@ const user = require('../models/user');
 const userAuth = require('../models/userAuth');
 const jwt = require('jsonwebtoken');
 var nodemailer = require('nodemailer');
+var smtpTransport = require('nodemailer-smtp-transport');
 //......................................................User onboard started.................................................................................................................................................................................................................................................
 
 
@@ -23,13 +24,14 @@ const userSignup = async(payLoad) => {
             if (!mobileData) {
                 otp = Math.floor(1000 + Math.random() * 9000);
                 if (otp) {
-                    const transporter = nodemailer.createTransport({
+                    const transporter = nodemailer.createTransport(smtpTransport({
                         service: 'gmail',
+                        host: 'smtp.gmail.com',
                         auth: {
                             user: 'venus.bityotta@gmail.com',
                             pass: 'venus@123'
                         }
-                    });
+                    }));
 
                     const mailOptions = {
                         from: 'venus.bityotta@gmail.com',
