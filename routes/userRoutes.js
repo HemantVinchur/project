@@ -101,7 +101,7 @@ router.post('/verifyOTP', userValidator.verifyOTPValidator,
                 return res.status(200).json({
                     statusCode: 200,
                     message: "OTP verified",
-                    data: newData.userData
+                    data: newData.find
                 })
             } else if (newData.find) {
                 return res.status(200).json({
@@ -128,6 +128,50 @@ router.post('/verifyOTP', userValidator.verifyOTPValidator,
 router.post('/resetPassword', userValidator.resetPasswordValidator,
     async(req, res) => {
         try {
+            let payLoad = req.body;
+            let newData = await services.resetPassServices(payLoad);
+            console.log(newData)
+            if (newData.updateData) {
+                return res.status(200).json({
+                    statusCode: 200,
+                    message: "Password successfully updated",
+                    data: newData.updateData
+                })
+            } else if (!newData.findData) {
+                return res.status(200).json({
+                    statusCode: 404,
+                    message: "User does not exists",
+                    data: {}
+                })
+            } else if (newData.confirm) {
+                return res.status(200).json({
+                    statusCode: 401,
+                    message: "Confirm password is not correct",
+                    data: {}
+                })
+            } else {
+                return res.status(200).json({
+                    statusCode: 400,
+                    message: "Password does not updated",
+                    data: {}
+                })
+            }
+        } catch (error) {
+            console.log(error);
+            res.status(200).json({
+                statusCode: 400,
+                message: "Password does not updated",
+                data: {}
+            })
+        }
+    })
+
+
+//User change password
+
+router.post('/changePassword', userValidator.changePasswordValidator,
+    async(req, res) => {
+        try {
 
             if (!req.headers.authorization) {
                 return res.status(200).json({
@@ -148,7 +192,7 @@ router.post('/resetPassword', userValidator.resetPasswordValidator,
             }
             token.accessToken = decodeCode.accessToken
             let payLoad = req.body;
-            let newData = await services.resetPassServices(payLoad, token);
+            let newData = await services.changePassServices(payLoad, token);
             console.log(newData)
             if (newData.updateData) {
                 return res.status(200).json({
@@ -165,7 +209,7 @@ router.post('/resetPassword', userValidator.resetPasswordValidator,
             } else if (newData.confirm) {
                 return res.status(200).json({
                     statusCode: 401,
-                    message: "Confirm password is not correct",
+                    message: "Old password is not correct",
                     data: {}
                 })
             } else {
@@ -344,6 +388,76 @@ router.put('/editProfile',
                 data: {}
             })
 
+
+        }
+
+    })
+
+
+//Add states-:
+
+router.post('/addStates', userValidator.addStatesValidator,
+    async(req, res) => {
+        try {
+            let payLoad = req.body;
+            let newData = await services.addStates(payLoad);
+            console.log(newData)
+            if (newData) {
+                return res.status(200).json({
+                    statusCode: 200,
+                    message: "States successfully added",
+                    data: newData
+                })
+            } else {
+                return res.status(200).json({
+                    statusCode: 500,
+                    message: "States does not added",
+                    data: {}
+                })
+            }
+        } catch (error) {
+            console.log(error)
+            res.status(200).json({
+                statusCode: 500,
+                message: "States does not added",
+                data: {}
+            })
+        }
+
+    })
+
+
+//List of states-:
+
+router.get('/listOfStates',
+    async(req, res) => {
+        try {
+            var data = await services.listOfStates();
+            if (data) {
+                return res.status(200).json({
+                    statusCode: 200,
+                    message: "List of states successfully fetched",
+                    data: data
+                })
+            } else if (data.empty) {
+                return res.status(200).json({
+                    statusCode: 404,
+                    message: "List of states does not present",
+                    data: {}
+                })
+            } else {
+                return res.status(200).json({
+                    statusCode: 404,
+                    message: "List of states does not present",
+                    data: {}
+                })
+            }
+        } catch (error) {
+            res.status(200).json({
+                statusCode: 401,
+                message: "Internal error, please check access token",
+                data: {}
+            })
 
         }
 

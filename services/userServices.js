@@ -1,5 +1,6 @@
 const functions = require('../function');
 const user = require('../models/user');
+const states = require('../models/states');
 const userAuth = require('../models/userAuth');
 const jwt = require('jsonwebtoken');
 var nodemailer = require('nodemailer');
@@ -17,7 +18,7 @@ const userSignup = async(payLoad) => {
         let mobileData = await user.findOne({ contact: payLoad.contact });
         let hashObj = functions.hashPassword(payLoad.password)
         console.log(hashObj)
-        delete payLoad.password
+        delete payLoad.password;
         payLoad.salt = hashObj.salt
         payLoad.password = hashObj.hash
         if (!findData) {
@@ -159,7 +160,43 @@ const verifyOTPServices = async(payLoad) => {
 
 //Reset password:-
 
-const resetPassServices = async(payLoad, token) => {
+const resetPassServices = async(payLoad) => {
+    try {
+        if (payLoad.email) {
+            var findData = await user.findOne({ email: payLoad.email });
+            if (!findData) {
+                return "User does not exist";
+            } else {
+                if (payLoad.password == payLoad.confirmPassword) {
+                    let hashObj = functions.hashPassword(payLoad.password);
+                    console.log(hashObj)
+                    delete payLoad.password;
+                    payLoad.salt = hashObj.salt;
+                    payLoad.password = hashObj.hash;
+                    var updateData = await user.updateOne({ email: payLoad.email }, {
+                        $set: {
+                            password: payLoad.password,
+                            salt: payLoad.salt
+                        }
+                    }, { new: true });
+                } else {
+                    var confirm = "Confirm password is not correct"
+                }
+            }
+        } else {
+            return "User does not exists";
+        }
+        return { updateData, findData, confirm };
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+}
+
+
+//Change password:-
+
+const changePassServices = async(payLoad, token) => {
     try {
         let find = await userAuth.findOne({ accessToken: token });
         if (find.email) {
@@ -167,10 +204,11 @@ const resetPassServices = async(payLoad, token) => {
             if (!findData) {
                 return "User does not exist";
             } else {
-                if (payLoad.password == payLoad.confirmPassword) {
-                    let hashObj = functions.hashPassword(payLoad.password);
+                var isPasswordValid = functions.validatePassword(findData.salt, payLoad.oldPassword, findData.password);
+                if (isPasswordValid) {
+                    let hashObj = functions.hashPassword(payLoad.newPassword);
                     console.log(hashObj)
-                    delete password;
+                    delete payLoad.newPassword;
                     payLoad.salt = hashObj.salt;
                     payLoad.password = hashObj.hash;
                     var updateData = await user.updateOne({ email: find.email }, {
@@ -180,7 +218,7 @@ const resetPassServices = async(payLoad, token) => {
                         }
                     }, { new: true });
                 } else {
-                    var confirm = "Confirm password is not correct"
+                    var confirm = "Old password is not correct"
                 }
             }
         } else {
@@ -304,6 +342,38 @@ const updateProfile = async(payLoad, token) => {
 
 }
 
+
+//Add states:-
+
+const addStates = async(payLoad) => {
+    try {
+        var userData = await states.create(payLoad);
+        return userData;
+    } catch (error) {
+        console.error(error)
+        throw error
+    }
+}
+
+
+//List of states
+
+const listOfStates = async() => {
+    try {
+        var userData = await states.find();
+        if (!userData.length) {
+            console.log("States are not present")
+            var empty = "States are not present"
+            return { empty }
+        } else {
+            return userData;
+        }
+    } catch (error) {
+        console.error(error)
+        throw error;
+    }
+}
+
 //User Logout
 
 const userLogout = async(token) => {
@@ -321,4 +391,4 @@ const userLogout = async(token) => {
     }
 }
 
-module.exports = { userSignup, verifyEmailServices, verifyOTPServices, resetPassServices, userSignIn, signinViaTokenService, updateProfile, userLogout }
+module.exports = { userSignup, verifyEmailServices, verifyOTPServices, resetPassServices, changePassServices, userSignIn, signinViaTokenService, updateProfile, addStates, listOfStates, userLogout }
